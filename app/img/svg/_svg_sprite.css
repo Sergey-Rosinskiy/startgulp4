@@ -1,0 +1,38 @@
+.ic {
+    font-size: 10px;
+}
+
+.ic:before {
+    content:' ';
+    vertical-align:middle;
+    display: inline-block;
+    background-image: url("svg.svg");
+    background-repeat: no-repeat;
+    background-size: 58.5918em 113.7em;
+}
+
+.no-svg .ic:before {
+    background-image: url("../svg.png");
+}
+
+
+
+  .ic.i-sp-svg-file-format-variant:before {
+      background-position: 0em 0em;
+      width: 55.0801em;
+      height: 55.0801em;
+  }
+
+
+
+
+  .ic.i-sp-svg-open-file-format:before {
+      background-position: 0em -55.1em;
+      width: 58.5918em;
+      height: 58.5918em;
+  }
+
+
+
+
+
