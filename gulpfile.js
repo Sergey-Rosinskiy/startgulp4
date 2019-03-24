@@ -1,138 +1,136 @@
-var syntax        = 'scss', // Syntax: sass or scss;
-		gulpversion   = '4'; // Gulp version: 3 or 4
 
-var gulp          = require('gulp'),
-    gutil         = require('gulp-util' ),
-	sass          = require('gulp-sass'),
-	browserSync   = require('browser-sync'),
-	concat        = require('gulp-concat'),
-	uglify        = require('gulp-uglify'),
-	cleancss      = require('gulp-clean-css'),
-	rename        = require('gulp-rename'),
-	autoprefixer  = require('gulp-autoprefixer'),
-	notify        = require('gulp-notify'),
-	rsync         = require('gulp-rsync');
-var filesize = require('gulp-filesize');
-// npm i gulp-filesize --save-dev
+var gulp              = require('gulp');
+var sass                  = require('gulp-sass');
+var browserSync           = require('browser-sync').create();
+var concat                = require('gulp-concat');
+var uglify                = require('gulp-uglify');
+var cleancss              = require('gulp-clean-css');
+var rename                = require('gulp-rename');
+var autoprefixer          = require('gulp-autoprefixer');
+var rsync                 = require('gulp-rsync');
+var filesize          = require('gulp-filesize');
+var sourcemaps        = require('gulp-sourcemaps');
+var gulpif            = require('gulp-if');
+var plumber           = require('gulp-plumber');
 
-var sourcemaps = require('gulp-sourcemaps');
- // npm install gulp-sourcemaps --save-dev
-var gulpif                = require('gulp-if');
-// npm install gulp-if --save-dev  задействоват для gulp-sourcemaps
-// переменая которая контролирует создание (true) или отключение (false) карты кода в файле
-var isDevelopmant = true;
+var notify                = require('gulp-notify');
+var growl          = require('gulp-notify-growl');
 
-var plumber               = require('gulp-plumber');
-// npm install gulp-plumber --save-dev
-var notify                = require("gulp-notify");
-// npm install gulp-notify --save-dev
-var growl                 = require('gulp-notify-growl');
-// npm install gulp-notify-growl --save-dev
+var imagemin          = require('gulp-imagemin');
+var pngquant          = require('imagemin-pngquant');
+var imageminJpg       = require('imagemin-jpeg-recompress');
 
-var imagemin              = require('gulp-imagemin');
-var pngquant              = require('imagemin-pngquant');
-// npm i gulp-imagemin imagemin-pngquant --save-dev
-var imageminJpg = require('imagemin-jpeg-recompress');
-//$ npm install --save-dev imagemin-jpeg-recompress
-
-//var cache                 = require('gulp-cache');
+//var cache           = require('gulp-cache');
 // npm i gulp-cache --save-dev
 
-var del = require('del');
-// npm i del --save-dev
+var del               = require('del');
 
 // плагин для создания спрайтов png
-var spritesmith = require('gulp.spritesmith');
-// npm i gulp.spritesmith --save-dev
+var spritesmith       = require('gulp.spritesmith');
 
-const svgSprite = require("gulp-svg-sprites");
-// npm i gulp-svg-sprites
+var svgSprite         = require("gulp-svg-sprites");
 
+var tingpng           = require('gulp-tinypng');
 
 // три строки переменные для генерации фавикона
-var realFavicon = require ('gulp-real-favicon');
-var fs = require('fs');
+var realFavicon       = require ('gulp-real-favicon');
+var fs                = require('fs');
 var FAVICON_DATA_FILE = 'app/libs/favicon/faviconData.json';
-// npm install gulp-real-favicon --save-dev
 
+var gulpUtil          = require('gulp-util');
+var ftp               = require('gulp-ftp');
+var vinyFTP           = require( 'vinyl-ftp' );
 
-var gulpUtil = require('gulp-util');
-var ftp   = require('gulp-ftp');
-var vinyFTP = require( 'vinyl-ftp' );
-// npm install --save-dev gulp-ftp vinyl-ftp gulp-util
+var critical          = require('critical').stream;
 
-var critical = require('critical').stream;
-//$ npm install --save critical
+// эти два плагина отвечают за создания иконочных шрифтов из SVG
+var iconfont = require('gulp-iconfont');
+var iconfontCss = require('gulp-iconfont-css');
+var runTimestamp = Math.round(Date.now()/1000);
 
+// переменая которая контролирует создание (true) или отключение (false) карты кода в файле
+var isDevelopmant     = true;
 
-gulp.task('serve', function() {
-	browserSync.init({
-		server: {
-			baseDir: './app'
-		},
-		notify: false,
-		// open: false,
-		// online: false, // Work Offline Without Internet Connection
-		// tunnel: true, tunnel: "projectname", // Demonstration page: http://projectname.localtunnel.me
-	});
+gulp.task('serve', done => {
+    browserSync.init({
+        server: {
+            baseDir: './app'
+        },
+        notify: false,
+         open:true,
+        // open: false,
+        // online: false, // Work Offline Without Internet Connection
+        // tunnel: true, tunnel: "projectname", // Demonstration page: http://projectname.localtunnel.me
+    });
     browserSync.watch('app', browserSync.reload);
+    done();
 });
 
-gulp.task('styles', function() {
-	return gulp.src('app/scss/main.scss')
+gulp.task('styles', done => {
+    return gulp.src('app/scss/main.scss')
 .pipe(plumber({
      errorHandler: notify.onError({
             message: function(error) {
                 return error.message;
             }})
  }))
-	.pipe(gulpif (isDevelopmant, sourcemaps.init({loadMaps:true})))
-	.pipe(sass({ outputStyle: 'expanded' }).on("error", notify.onError()))
-	.pipe(rename({ suffix: '.min', prefix : '' }))
-	.pipe(autoprefixer(['last 15 versions', '> 1%', 'ie 8', 'ie 7'], {cascade:true}))
-.pipe(filesize()).on('error', gutil.log)
-	.pipe(gulpif (isDevelopmant, sourcemaps.write(".")))
-	.pipe(gulp.dest('app/css'));
+.pipe(gulpif (isDevelopmant, sourcemaps.init({largeFile: true, loadMaps:true})))
+.pipe(sass({ outputStyle: 'expanded' }))
+// .on('error', notify.onError({
+//     title: 'Error!',
+//     message: '<%= error.message %>',
+//     sound: 'Beep'
+// }))
+.pipe(autoprefixer(['last 15 versions', '> 1%', 'ie 8', 'ie 7'], {cascade:true}))
+.pipe(rename({ suffix: '.min'}))
+//.pipe(cleancss( {level: { 2: { specialComments: 0 } } })) // Opt., comment out when debugging
+.pipe(filesize()).on('error', gulpUtil.log)
+.pipe(gulpif (isDevelopmant, sourcemaps.write(".")))
+.pipe(notify("Create file: <%= file.relative %>!"))
+.pipe(gulp.dest('app/css'));
+done();
 });
 
-gulp.task('scripts', function() {
-const jsFiles = [
-'app/libs/jquery/dist/jquery.min.js',
-'app/libs/nicescroll/jquery.nicescroll.min.js',
-'app/libs/jquery.PageScroll2id/jquery.PageScroll2id.min.js',
-'app/libs/magnific-popup/jquery.magnific-popup.min.js',
-'app/libs/owlcarousel/owl.carousel.min.js',
+gulp.task('scripts', done => {
+var jsFiles = [
+'app/libs/plagins/jquery/jquery.min.js',
+//'app/libs/plagins/nicescroll/jquery.nicescroll.min.js',
+//'app/libs/plagins/jquery.PageScroll2id/jquery.PageScroll2id.min.js',
+'app/libs/plagins/magnific-popup/jquery.magnific-popup.min.js',
+// 'app/libs/plagins/owlcarousel/owl.carousel.min.js',
+'app/libs/plagins/slick/slick.min.js',
 'app/libs/common.js' // Always at the end
-]
+];
 	return gulp.src(jsFiles)
 	.pipe(concat('scripts.min.js'))
-	// .pipe(uglify()) // Mifify js (opt.)
+//	.pipe(uglify()) // Mifify js (opt.)
+.pipe(notify("Create file: <%= file.relative %>!"))
 	.pipe(gulp.dest('app/js'))
-	.pipe(filesize()).on('error', gutil.log);
+	.pipe(filesize()).on('error', gulpUtil.log);
+    done();
 });
 
-gulp.task('code', function() {
+gulp.task('code', done => {
 	return gulp.src(['app/*.html', 'app/*php']);
+    done();
 });
 
-gulp.task('picture', function() {
+gulp.task('picture', done => {
     return gulp.src(['app/img/*.{jpg,png,svg,ico}']);
-
+    done();
 });
 
-gulp.task('watch', function() {
+gulp.task('watch', done => {
 gulp.watch("app/scss/**/*.scss", gulp.series('styles'));
 gulp.watch("app/libs/**/*.js", gulp.series('scripts'));
 gulp.watch("app/*.html", gulp.series('code'));
 gulp.watch("app/img/**/*.*", gulp.series('picture'));
+done();
 });
 
-gulp.task('default', gulp.series(
-    gulp.parallel('styles','scripts','code','picture'),
-     gulp.parallel( 'watch', 'serve')
-     ));
+gulp.task('default', gulp.parallel(['styles','scripts', 'watch', 'serve']));
 
-
+// Как подключиться по SSH
 gulp.task('rsync', function() {
 	return gulp.src('app/**')
 	.pipe(rsync({
@@ -145,11 +143,8 @@ gulp.task('rsync', function() {
 		archive: true,
 		silent: false,
 		compress: true
-	}))
+	}));
 });
-
-
-
 
 // npm install --save-dev gulp-ftp vinyl-ftp
 //FTP: ftp://vh146.timeweb.ru
@@ -183,52 +178,43 @@ gulp.task( 'ftp', function () {
 
 } );
 
-// Как подключиться по SSH
-
-
 function cleaner() {
 return del('dist/*');
 }
-gulp.task('cleanbuild', cleaner);
+
+
 function movefile() {
 	return gulp.src('app/*.html')
        .pipe(critical({base: 'dist/',
             inline: true,
              css: 'app/css/main.min.css'}))
-        .on('error', function(err) { gulpUtil.log(gutil.colors.red(err.message)); })
+        .on('error', function(err) { gulpUtil.log(gulpUtil.colors.red(err.message)); })
 	 .pipe(gulp.dest('dist'));
 }
 
 function movefilother() {
-	return gulp.src('app/*.{php,access}')
-	 .pipe(gulp.dest('dist'));
+    return gulp.src('app/*.{php,access}')
+     .pipe(gulp.dest('dist'));
 }
-
 
 function movejs() {
-	return gulp.src('app/js/scripts.min.js')
-	.pipe(uglify()) // Mifify js (opt.)
-	 .pipe(gulp.dest('dist/js'))
-	 .pipe(filesize()).on('error', gutil.log);
+    return gulp.src('app/js/scripts.min.js')
+    .pipe(uglify()) // Mifify js (opt.)
+     .pipe(gulp.dest('dist/js'))
+     .pipe(filesize()).on('error', gulpUtil.log);
 }
 function movecss() {
-	return gulp.src('app/css/main.min.css')
-	.pipe(cleancss( {level: { 2: { specialComments: 0 } } })) // Opt., comment out when debugging
-	 	 .pipe(gulp.dest('dist/css'))
-	 	 .pipe(filesize()).on('error', gutil.log);
+    return gulp.src('app/css/main.min.css')
+    .pipe(cleancss( {level: { 2: { specialComments: 0 } } })) // Opt., comment out when debugging
+         .pipe(gulp.dest('dist/css'))
+         .pipe(filesize()).on('error', gulpUtil.log);
 }
-gulp.task('movefile', movefile);
-gulp.task('movefilother', movefilother);
-gulp.task('movejs', movejs);
-gulp.task('movecss', movecss);
-gulp.task('moveimages', moveimages);
-gulp.task('build', gulp.series('cleanbuild', gulp.parallel('movefile', 'movefilother', 'movejs', 'movecss', 'moveimages' )));
 
 function moveimages() {
-	return gulp.src('app/img/**/*.{jpg,svg,png,ico}')
+    return gulp.src('app/img/**/*.{jpg,svg,png,ico}')
         .pipe(imagemin([
     imageminJpg({
- 			loops: 5,
+            loops: 5,
             min: 50,
             max: 95,
             quality: 'hight'
@@ -242,9 +228,25 @@ function moveimages() {
     })
 ]))
         .pipe(gulp.dest('dist/img'))
-        .pipe(filesize()).on('error', gutil.log);
+        .pipe(filesize()).on('error', gulpUtil.log);
 }
 
+function compressimg() {
+ return gulp.src('app/beforecompress/**/*')
+     .pipe(tingpng('8cVpmwZQXvCdnVDk2FqdbWVk5RfJBS9Z'))
+  .pipe(gulp.dest('dist/aftercompress'));
+}
+
+gulp.task('compressimg', gulp.series(compressimg));
+gulp.task('cleanbuild', cleaner);
+gulp.task('movefile', movefile);
+gulp.task('movefilother', movefilother);
+gulp.task('movejs', movejs);
+gulp.task('movecss', movecss);
+gulp.task('moveimages', gulp.series(moveimages));
+
+
+gulp.task('build', gulp.series('cleanbuild', gulp.parallel('movefile', 'movefilother', 'movejs', 'movecss', 'moveimages' )));
 
 // task для создания спрайтов png
 
@@ -280,8 +282,6 @@ common: "ic"
 }
 
 gulp.task('spritesvg', spritesvg);
-
-
 
 // Generate the icons.
 gulp.task('genfav', function(done) {
@@ -346,14 +346,14 @@ gulp.task('genfav', function(done) {
 });
 
 // Inject the favicon markups in your HTML pages.
-gulp.task('infav', function() {
+gulp.task('injectfav', function() {
     return gulp.src(['app/*.html'])
         .pipe(realFavicon.injectFaviconMarkups(JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).favicon.html_code))
         .pipe(gulp.dest('app'));
 });
 
 // Check for updates on RealFaviconGenerator
-gulp.task('favupdate', function(done) {
+gulp.task('updatefav', function(done) {
     var currentVersion = JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).version;
     realFavicon.checkForUpdates(currentVersion, function(err) {
         if (err) {
@@ -362,4 +362,26 @@ gulp.task('favupdate', function(done) {
     });
 });
 
+// важные файлы размещены в каталоге templates/
+// нужно использовать SVG большого размера хорошего качества
 
+gulp.task('iconfont', function(){
+  return gulp.src(['app/libs/svgforiconfonts/*.svg'])
+     .pipe(iconfontCss({
+      fontName: 'myfont', // required
+      path: 'app/libs/templates/_icons.css',
+      targetPath: '../../scss/_icons.css',
+      fontPath: 'app/fonts/icons/'
+    }))
+    .pipe(iconfont({
+      fontName: 'myfont', // required
+      prependUnicode: true, // recommended option
+      formats: ['ttf', 'eot', 'woff'], // default, 'woff2' and 'svg' are available
+      timestamp: runTimestamp, // recommended to get consistent builds when watching files
+    }))
+      .on('glyphs', function(glyphs, options) {
+        // CSS templating, e.g.
+        console.log(glyphs, options);
+      })
+    .pipe(gulp.dest('app/fonts/icons/'));
+});

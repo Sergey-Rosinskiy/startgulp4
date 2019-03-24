@@ -1,0 +1,30 @@
+@font-face {
+	font-family: "myfont";
+	src: url('app/fonts/icons/myfont.eot');
+	src: url('app/fonts/icons/myfont.eot?#iefix') format('embedded-opentype'),
+		url('app/fonts/icons/myfont.woff2') format('woff2'),
+		url('app/fonts/icons/myfont.woff') format('woff'),
+		url('app/fonts/icons/myfont.ttf') format('truetype'),
+		url('app/fonts/icons/myfont.svg#myfont') format('svg');
+}
+
+.icon {
+	font-family: "myfont";
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: normal;
+	/* speak: none; only necessary if not using the private unicode range (firstGlyph option) */
+	text-decoration: none;
+	text-transform: none;
+}
+
+
+.icon-svg-file-format-variant:before {
+	content: "\E001";
+}
+
+.icon-svg-open-file-format:before {
+	content: "\E002";
+}
