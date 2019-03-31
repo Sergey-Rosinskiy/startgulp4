@@ -10,6 +10,7 @@ var autoprefixer          = require('gulp-autoprefixer');
 var rsync                 = require('gulp-rsync');
 var filesize          = require('gulp-filesize');
 var sourcemaps        = require('gulp-sourcemaps');
+// eslint-disable-next-line no-var
 var gulpif            = require('gulp-if');
 var plumber           = require('gulp-plumber');
 
@@ -99,7 +100,8 @@ var jsFiles = [
 'app/libs/plagins/magnific-popup/jquery.magnific-popup.min.js',
 // 'app/libs/plagins/owlcarousel/owl.carousel.min.js',
 'app/libs/plagins/slick/slick.min.js',
-'app/libs/common.js' // Always at the end
+'app/libs/common.js'
+// Always at the end
 ];
 	return gulp.src(jsFiles)
 	.pipe(concat('scripts.min.js'))

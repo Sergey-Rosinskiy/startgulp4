@@ -36,16 +36,62 @@ body {
   padding-left: 15px;
   padding-right: 15px;
 }
-@media (min-width: 576px) {
+
+
+@media (min-width: 480px) {
+  .container {
+    max-width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+@media (min-width: 568px) {
   .container {
     max-width: 540px;
   }
 }
-@media (min-width: 768px) {
+@media (min-width: 600px) {
+  .container {
+    max-width: 580px;
+  }
+}
+@media (min-width: 640px) {
+  .container {
+    max-width: 620px;
+  }
+}
+@media (min-width: 667px) {
+  .container {
+     max-width: 640px;
+  }
+}
+@media (min-width: 684px) {
+  .container {
+     max-width: 664px;
+  }
+}
+@media (min-width: 734px) {
   .container {
      max-width: 720px;
   }
 }
+
+@media (min-width: 736px) {
+  .container {
+     max-width: 720px;
+  }
+}
+@media (min-width: 800px) {
+  .container {
+    max-width: 760px;
+  }
+}
+@media (min-width: 980px) {
+  .container {
+    max-width: 960px;
+  }
+}
+
 @media (min-width: 992px) {
   .container {
     max-width: 960px;
@@ -56,6 +102,7 @@ body {
     max-width: 1140px;
   }
 }
+
 .container-fluid {
   width: 100%;
   padding-right: 15px;
