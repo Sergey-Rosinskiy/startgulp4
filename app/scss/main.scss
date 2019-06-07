@@ -1,33 +1,30 @@
-@import "libs";
 @import "var";
-@import "fonts";
-// эти свойства по default
 
+// эти свойства по default
 *::-webkit-input-placeholder {
-color:$placeholder_color_text;
+color:#202020;
 opacity: 1;
 }
 
-*:-moz-placeholder {
-color:$placeholder_color_text;
-	opacity: 1;
-}
 *::-moz-placeholder {
-color:$placeholder_color_text;
+color: $placeholdercolortext;
 	opacity: 1;
 }
-*:-ms-input-placeholder {
-color:$placeholder_color_text;
+*::-ms-input-placeholder {
+color: $placeholdercolortext;
 	opacity: 1;
 }
 ::placeholder {
-	color: $placeholder_color_text;
+	color: $placeholdercolortext;
 }
 
 ::selection {
 	background-color: $accent_color;
 	color: $white_color;
 }
+
+@import "fonts";
+
 html{
 width: 100%;
 /* height: 100%; */
@@ -42,6 +39,7 @@ padding:0;
 body {
 	font-size: $body_fontsize;
 	min-width: 320px;
+	opacity: 1;
 	position: relative;
 	line-height: $body_lineheight;
 	font-family: $default-font;
@@ -67,11 +65,13 @@ body {
 		width: 100%;
 	}
 }
-lk
-kkj
+
 
 @import "header"; // стили шапки сайта
 @import "allstyle"; // стили шапки сайта
+
+@import "singleheader"; // стили шапки сайта
+@import "footer"; // стили шапки сайта
 @import "media"; // Always at the end
 
 
