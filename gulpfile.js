@@ -42,6 +42,12 @@ const vinyFTP           = require( 'vinyl-ftp' );
 
 const critical          = require('critical').stream;
 
+const spriteSvg = require('gulp-svg-sprite');
+const svgmin = require('gulp-svgmin');
+const cheerio = require('gulp-cheerio');
+const replace = require('gulp-replace');
+const cheerioClean = require('gulp-cheerio-clean-svg');
+
 // эти два плагина отвечают за создания иконочных шрифтов из SVG
 const iconfont = require('gulp-iconfont');
 const iconfontCss = require('gulp-iconfont-css');
@@ -268,20 +274,6 @@ function spritepng() {
 
   gulp.task('spritepng', spritepng);
 
-  function spritesvg() {
-    return gulp.src('app/libs/svgsprites/*.svg')
-    .pipe(svgSprite({
-      selector: "i-sp-%f",
-      svg: {sprite: "svg.svg"},
-      svgPath: "%f",
-      cssFile: "_svg_sprite.css",
-      common: "ic"
-    }))
-    .pipe(gulp.dest("app/css"));
-  }
-
-  gulp.task('spritesvg', spritesvg);
-
 // Generate the icons.
 gulp.task('genfav', function(done) {
   realFavicon.generateFavicon({
@@ -384,3 +376,59 @@ gulp.task('iconfont', function(){
       })
   .pipe(gulp.dest('app/fonts/icons/'));
 });
+
+
+
+  function spritesvg() {
+    return gulp.src('app/libs/plagins/svg/*.svg')
+    .pipe(svgSprite({
+      selector: "i-sp-%f",
+      svg: {sprite: "svg.svg"},
+      svgPath: "%f",
+      cssFile: "_svg_sprite.css",
+      common: "ic"
+    }))
+    .pipe(gulp.dest("app/css"));
+  }
+
+  gulp.task('spritesvg', spritesvg);
+
+
+
+
+// создаем SVG спрайты
+gulp.task('buildsvg', function () {
+  return gulp.src('app/libs/plagins/svg/*.svg')
+  // минифицируем svg
+    .pipe(svgmin({
+    js2svg: {
+      pretty: true
+    }
+  }))
+  // удалить все атрибуты fill, style and stroke в фигурах
+    .pipe(cheerio({
+    run: function ($) {
+      $('[fill]').removeAttr('fill');
+      $('[stroke]').removeAttr('stroke');
+      $('[style]').removeAttr('style');
+    },
+    parserOptions: {
+      xmlMode: true
+    }
+  }))
+  // cheerio плагин заменит, если появилась, скобка '&gt;', на нормальную.
+    .pipe(replace('&gt;', '>'))
+  // build svg sprite
+    .pipe(spriteSvg({
+    mode: {
+      symbol: {
+        sprite: "../sprite/sprite.svg",
+        example: {
+          dest: '../sprite/spriteSvgDemo.html' // демо html
+        }
+      }
+    }
+  }))
+    .pipe(gulp.dest('app/img'));
+});
+

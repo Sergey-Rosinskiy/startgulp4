@@ -1,4 +1,3 @@
-
 # Start temptate Gulp4
 
 Я собрал этот стартовый шаблон специально для того, чтобы быстро приступить к верстке шаблона по предоставленному PSD-макету. В качестве сборщика использую Gulp 4.
@@ -78,7 +77,7 @@ index.html - верстка шаблона
 
 Если есть необходимость установить плагины jQuery, все каталоги разместите в калалоге libs.
 Чтобы подключить js-файлы прописывать путь к ним в файле gulpfile.js
-Чтобы подключить файлы css, пропишите пути к ним в файле app/scss/ _ libs.scss
+Чтобы подключить файлы css, пропишите пути к ним в файле app/scss/ \_ libs.scss
 
 ### Финальная сборка шаблона
 
@@ -106,12 +105,24 @@ gulp ftp
 gulp spritepng
 ```
 
-##### Создать спрайт svg
+##### Создать спрайт svg: простой вариант
 
-В каталог app/svgsprites поместите набор из svg файлов, в консоли наберите команду и в результате получите файл со страйтом и css-файл, который поможет подключить спрайт к шаблону
+В каталог app/libs/plagins/svg/ поместите набор из svg файлов, в консоли наберите команду и в результате получите файл со страйтом и css-файл, который поможет подключить спрайт к шаблону
+
+Найдете файл спрайтов в каталоге app/css/
 
 ```
 gulp spritesvg
+```
+
+##### Создать спрайт svg: сложный вариант
+
+В каталог app/libs/plagins/svg/ поместите набор из svg файлов, в консоли наберите команду и в результате получите файл со страйтом и css-файл, который поможет подключить спрайт к шаблону
+
+Найдете файл спрайтов в каталоге app/img/sprite/
+
+```
+gulp buildsvg
 ```
 
 ##### Создать иконочный шрифт из набора svg
@@ -153,10 +164,11 @@ gulp compressimg
 
 ## Связаться по вопросам создания сайта под ключ:
 
-* [facebook](https://www.facebook.com/frontendercode)
-* [github](https://github.com/frontend-coder)
-* [skype:webrabcom](href="skype:webrabcom")
-* [telegram](https://t.me/frontendcoder)
+- [facebook](https://www.facebook.com/frontendercode)
+- [github](https://github.com/frontend-coder)
+- [skype:webrabcom](href="skype:webrabcom")
+- [telegram](https://t.me/frontendcoder)
 
 ## Портфолио
-* [Портфолио](https://frontend-coder.github.io)
+
+- [Портфолио](https://frontend-coder.github.io)

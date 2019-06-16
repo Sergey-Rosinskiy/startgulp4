@@ -4026,28 +4026,6 @@ img.mfp-img {
   font-weight: normal;
 }
 
-/* font-family: "OpenSansSemiBold"; */
-@font-face {
-  font-family: "OpenSansSemiBold";
-  src: url("../fonts/OpenSansSemiBold/OpenSansSemiBold.eot?#iefix") format("embedded-opentype"), url("../fonts/OpenSansSemiBold/OpenSansSemiBold.woff") format("woff"), url("../fonts/OpenSansSemiBold/OpenSansSemiBold.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 600;
-}
-
-@font-face {
-  font-family: "OpenSansBold";
-  src: url("../fonts/OpenSansBold/OpenSansBold.eot?#iefix") format("embedded-opentype"), url("../fonts/OpenSansBold/OpenSansBold.woff") format("woff"), url("../fonts/OpenSansBold/OpenSansBold.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 700;
-}
-
-@font-face {
-  font-family: "OpenSansLight";
-  src: url("../fonts/OpenSansLight/OpenSansLight.eot?#iefix") format("embedded-opentype"), url("../fonts/OpenSansLight/OpenSansLight.woff") format("woff"), url("../fonts/OpenSansLight/OpenSansLight.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 200;
-}
-
 html {
   width: 100%;
   /* height: 100%; */
@@ -4105,21 +4083,6 @@ header {
 
 .block {
   padding: 50px 0;
-}
-
-.header_fon {
-  background-color: black;
-}
-
-.header_fon h1 {
-  color: black;
-  color: red;
-}
-
-.in_hea {
-  margin-top: 30px;
-  padding-top: 49px;
-  color: #fcac45;
 }
 
 .heagerclass {
