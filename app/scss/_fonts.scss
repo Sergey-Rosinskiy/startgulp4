@@ -6,8 +6,19 @@
 		url("../fonts/OpenSansRegular/OpenSansRegular.ttf") format("truetype");
 	font-style: normal;
 	font-weight: normal;
+		font-display: fallback;
 }
 
+@font-face {
+	font-family: "RobotoCondensedBold";
+	src: url("../fonts/RobotoCondensedBold/RobotoCondensedBold.eot?#iefix")format("embedded-opentype"),
+		url("../fonts/RobotoCondensedBold/RobotoCondensedBold.woff") format("woff"),
+		url("../fonts/RobotoCondensedBold/RobotoCondensedBold.woff2") format("woff2"),
+		url("../fonts/RobotoCondensedBold/RobotoCondensedBold.ttf") format("truetype");
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+}
 
 // 100 Extra Light or Ultra Light
 // 200 Light or Thin
