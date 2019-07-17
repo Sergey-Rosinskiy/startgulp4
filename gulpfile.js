@@ -46,7 +46,7 @@ const spriteSvg = require('gulp-svg-sprite');
 const svgmin = require('gulp-svgmin');
 const cheerio = require('gulp-cheerio');
 const replace = require('gulp-replace');
-const cheerioClean = require('gulp-cheerio-clean-svg');
+// const cheerioClean = require('gulp-cheerio-clean-svg');
 
 // эти два плагина отвечают за создания иконочных шрифтов из SVG
 const iconfont = require('gulp-iconfont');
@@ -380,7 +380,7 @@ gulp.task('iconfont', function(){
 
 
   function spritesvg() {
-    return gulp.src('app/libs/plagins/svg/*.svg')
+    return gulp.src('app/libs/plagins/svgsprites/*.svg')
     .pipe(svgSprite({
       selector: "i-sp-%f",
       svg: {sprite: "svg.svg"},
@@ -388,7 +388,7 @@ gulp.task('iconfont', function(){
       cssFile: "_svg_sprite.css",
       common: "ic"
     }))
-    .pipe(gulp.dest("app/css"));
+    .pipe(gulp.dest("app/img/sprite/"));
   }
 
   gulp.task('spritesvg', spritesvg);
@@ -398,7 +398,7 @@ gulp.task('iconfont', function(){
 
 // создаем SVG спрайты
 gulp.task('buildsvg', function () {
-  return gulp.src('app/libs/plagins/svg/*.svg')
+  return gulp.src('app/libs/plagins/svgsprites/*.svg')
   // минифицируем svg
     .pipe(svgmin({
     js2svg: {
