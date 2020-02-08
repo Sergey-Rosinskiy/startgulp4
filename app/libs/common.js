@@ -6,7 +6,7 @@ $(document).ready(function () {
 	// 1 и 2 строка это анимация крестика
 	//3 строка - слайдер вниз меню
 	//слайдер вниз меню отвечает за работу мобильного меню к переносу
-	$(".toggle-mnu").click(function () {
+	$('.toggle-mnu').click(function () {
 		$(this).toggleClass("on");
 		$(".top-menu").slideToggle();
 		return false;

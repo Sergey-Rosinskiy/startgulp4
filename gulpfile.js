@@ -1,278 +1,314 @@
+"use strict";
 
 const gulp              = require('gulp');
-const sass                  = require('gulp-sass');
-const browserSync           = require('browser-sync').create();
-const concat                = require('gulp-concat');
-const uglify                = require('gulp-uglify');
-const cleancss              = require('gulp-clean-css');
-const rename                = require('gulp-rename');
-const autoprefixer          = require('gulp-autoprefixer');
-const rsync                 = require('gulp-rsync');
-const filesize          = require('gulp-filesize');
+const sass              = require('gulp-sass');
+const cssbeautify       = require('gulp-cssbeautify');
+const stripCssComments  = require('gulp-strip-css-comments');
+const strip             = require('gulp-strip-comments');
+const concat            = require('gulp-concat');
+const uglify            = require('gulp-uglify');
+const cleancss          = require('gulp-clean-css');
+const rename            = require('gulp-rename');
+const autoprefixer      = require('gulp-autoprefixer');
 const sourcemaps        = require('gulp-sourcemaps');
-// eslint-disable-next-line no-var
-const gulpif            = require('gulp-if');
 const plumber           = require('gulp-plumber');
-
-const notify                = require('gulp-notify');
-const growl          = require('gulp-notify-growl');
-
+const filesize          = require('gulp-filesize');
+const notify            = require('gulp-notify');
+const gulpUtil          = require('gulp-util');
+const browserSync       = require('browser-sync').create();
+const del               = require('del');
+const ftp               = require('gulp-ftp');
+const vinyFTP           = require( 'vinyl-ftp' );
+const rsync             = require('gulp-rsync');
+const svgmin            = require('gulp-svgmin');
+const cheerio           = require('gulp-cheerio');
+const replace           = require('gulp-replace');
+const spriteSvg         = require('gulp-svg-sprite');
+const spritesmith       = require('gulp.spritesmith');
+const merge             = require('merge-stream');
+const tingpng           = require('gulp-tinypng');
 const imagemin          = require('gulp-imagemin');
 const pngquant          = require('imagemin-pngquant');
 const imageminJpg       = require('imagemin-jpeg-recompress');
-
-//var cache           = require('gulp-cache');
-// npm i gulp-cache --save-dev
-
-const del               = require('del');
-
-// плагин для создания спрайтов png
-const spritesmith       = require('gulp.spritesmith');
-const svgSprite         = require("gulp-svg-sprites");
-const tingpng           = require('gulp-tinypng');
-
-// три строки переменные для генерации фавикона
 const realFavicon       = require ('gulp-real-favicon');
 const fs                = require('fs');
 const FAVICON_DATA_FILE = 'app/libs/favicon/faviconData.json';
-
-const gulpUtil          = require('gulp-util');
-const ftp               = require('gulp-ftp');
-const vinyFTP           = require( 'vinyl-ftp' );
-
+const iconfont          = require('gulp-iconfont');
+const iconfontCss       = require('gulp-iconfont-css');
+const runTimestamp      = Math.round(Date.now()/1000);
 const critical          = require('critical').stream;
+const log               = require('fancy-log');
+const eslint            = require('gulp-eslint');
 
-const spriteSvg = require('gulp-svg-sprite');
-const svgmin = require('gulp-svgmin');
-const cheerio = require('gulp-cheerio');
-const replace = require('gulp-replace');
-// const cheerioClean = require('gulp-cheerio-clean-svg');
 
-// эти два плагина отвечают за создания иконочных шрифтов из SVG
-const iconfont = require('gulp-iconfont');
-const iconfontCss = require('gulp-iconfont-css');
-const runTimestamp = Math.round(Date.now()/1000);
 
-// переменая которая контролирует создание (true) или отключение (false) карты кода в файле
-const isDevelopmant     = true;
 
-gulp.task('serve', done => {
-  browserSync.init({
-    server: {
-      baseDir: './app'
-    },
-    notify: false,
-    open:true,
-        // open: false,
-        // online: false, // Work Offline Without Internet Connection
-        // tunnel: true, tunnel: "projectname", // Demonstration page: http://projectname.localtunnel.me
-      });
-  browserSync.watch('app', browserSync.reload);
-  done();
+gulp.task('lint', () => {
+    return gulp.src('app/libs/common.js')
+        // eslint() attaches the lint output to the "eslint" property
+        // of the file object so it can be used by other modules.
+        .pipe(eslint())
+        // eslint.format() outputs the lint results to the console.
+        // Alternatively use eslint.formatEach() (see Docs).
+        .pipe(eslint.format())
+        // To have the process exit with an error code (1) on
+        // lint error, return the stream and pipe to failAfterError last.
+        .pipe(eslint.failAfterError());
+});
+
+
+
+
+
+gulp.task('critical', function () {
+  return gulp.src('dist/*.html')
+  .pipe(critical({base: 'dist/', inline: true, css: 'dist/css/libs.min.css'}))
+  .on('error', function(err) { log.error(err.message); })
+  .pipe(gulp.dest('dist'));
 });
 
 gulp.task('styles', () => {
-  var sassFiles = [
+  let sassFiles = [
   'app/scss/libs.scss',
   'app/scss/main.scss'
   ];
   return gulp.src(sassFiles)
   .pipe(plumber({
-   errorHandler: notify.onError({
-    message: function(error) {
-      return error.message;
-    }})
- }))
+    errorHandler: notify.onError(function(err){
+      return {
+        title: 'Styles',
+        message:err.message
+      }
+    })
+  }))
   .pipe(sourcemaps.init())
   .pipe(sass({ outputStyle: 'expanded' }))
-.pipe(autoprefixer(['last 15 versions', '> 1%', 'ie 8', 'ie 7'], {cascade:true}))
-.pipe(concat('libs.css'))
-.pipe(rename('libs.min.css'))
+  .pipe(autoprefixer(['last 6 versions', '> 1%', 'ie 8', 'ie 7'], {cascade:true}))
+  .pipe(stripCssComments())
+  .pipe(cssbeautify({indent: '  ', openbrace: 'separate-line', autosemicolon: true}))
+  .pipe(concat('libs.css'))
+  .pipe(rename('libs.min.css'))
 //.pipe(cleancss( {level: { 2: { specialComments: 0 } } })) // Opt., comment out when debugging
-.pipe(filesize()).on('error', gulpUtil.log)
 .pipe(sourcemaps.write(''))
-.pipe(notify("Create file: <%= file.relative %>!"))
+//.pipe(notify("Create file: <%= file.relative %>!"))
 .pipe(gulp.dest('app/css'));
 });
 
-gulp.task('scripts', done => {
-  var jsFiles = [
-  'app/libs/plagins/jquery/jquery.min.js',
-//'app/libs/plagins/nicescroll/jquery.nicescroll.min.js',
-//'app/libs/plagins/jquery.PageScroll2id/jquery.PageScroll2id.min.js',
-'app/libs/plagins/magnific-popup/jquery.magnific-popup.min.js',
-// 'app/libs/plagins/owlcarousel/owl.carousel.min.js',
-'app/libs/plagins/slick/slick.min.js',
-'app/libs/common.js'
+gulp.task('scripts', (done) => {
+  let jsFiles = [
+  'app/libs/plagins/jquery341.js',
+  'app/libs/plagins/page-scroll-to-id-master/js/minified/jquery.malihu.PageScroll2id.min.js',
+  'app/libs/plagins/magnific-popup/jquery.magnific-popup.min.js',
+  'app/libs/plagins/slick/slick.min.js',
+  'app/libs/common.js'
 // Always at the end
 ];
 return gulp.src(jsFiles)
+.pipe(strip())
 .pipe(concat('scripts.min.js'))
-//	.pipe(uglify()) // Mifify js (opt.)
-.pipe(notify("Create file: <%= file.relative %>!"))
+//  .pipe(uglify()) // Mifify js (opt.)
+.pipe(notify("Create file: <%= file.relative %>!").on('error', gulpUtil.log) )
 .pipe(gulp.dest('app/js'))
 .pipe(filesize()).on('error', gulpUtil.log);
-done();
+});
+
+gulp.task('serve', done => {
+	browserSync.init({
+		server: {
+			baseDir: './app'
+		},
+		notify: false,
+		open:true,
+    // online: false, // Work Offline Without Internet Connection
+    // tunnel: true, tunnel: "projectname", // Demonstration page: http://projectname.localtunnel.me
+  });
+	browserSync.watch('app', browserSync.reload);
+	done();
 });
 
 gulp.task('code', done => {
 	return gulp.src(['app/*.html', 'app/*php']);
-  done();
+	done();
 });
 
 gulp.task('picture', done => {
-  return gulp.src(['app/img/*.{jpg,png,svg,ico}']);
-  done();
+	return gulp.src(['app/img/*.{jpg,png,svg,ico}']);
+	done();
 });
 
 gulp.task('watch', done => {
-  gulp.watch("app/scss/**/*.scss", gulp.series('styles'));
-  gulp.watch("app/libs/**/*.js", gulp.series('scripts'));
-  gulp.watch("app/*.html", gulp.series('code'));
-  gulp.watch("app/img/**/*.*", gulp.series('picture'));
-  done();
+	gulp.watch("app/scss/**/*.scss", gulp.series('styles'));
+	gulp.watch("app/libs/**/*.js", gulp.series('scripts'));
+	gulp.watch("app/*.html", gulp.series('code'));
+	gulp.watch("app/img/**/*.*", gulp.series('picture'));
+	done();
 });
 
 gulp.task('default', gulp.parallel(['styles','scripts', 'watch', 'serve']));
-
-// Как подключиться по SSH
-gulp.task('rsync', function() {
-	return gulp.src('app/**')
-	.pipe(rsync({
-		root: 'app/',
-		hostname: 'username@yousite.com',
-		destination: 'yousite/public_html/',
-		// include: ['*.htaccess'], // Includes files to deploy
-		exclude: ['**/Thumbs.db', '**/*.DS_Store'], // Excludes files from deploy
-		recursive: true,
-		archive: true,
-		silent: false,
-		compress: true
-	}));
-});
-
-// npm install --save-dev gulp-ftp vinyl-ftp
-//FTP: ftp://vh146.timeweb.ru
-//Логин: cc63120
-//Пароль: j7X4Y36Od5Zm
-
-gulp.task( 'ftp', function () {
-  var conn = vinyFTP.create( {
-   host:     'vh116.timeweb.ru',
-   user:     'cx76534',
-   password: 'PowO7q2Qcv2Y',
-   parallel: 10,
-   log:      gulpUtil.log
- } );
-
-  var globs = [
-        // 'src/**',
-        // 'css/**',
-        // 'js/**',
-        // 'fonts/**',
-        // 'index.html'
-        'dist/**'
-        ];
-
-    // using base = '.' will transfer everything to /public_html correctly
-    // turn off buffering in gulp.src for best performance
-
-    return gulp.src( globs, { base: './dist/', buffer: false } )
-        .pipe( conn.newerOrDifferentSize( '/public_html' ) )// only upload newer files
-        .pipe( conn.dest( '/public_html' ) );
-
-      } );
-
 function cleaner() {
-  return del('dist/*');
+	return del('dist/*');
 }
-
-
 function movefile() {
 	return gulp.src('app/*.html')
-       // .pipe(critical({base: 'dist/',
-       //      inline: true,
-       //       ignore: ['@font-face',/url\(/],
-       //       css: 'app/css/main.min.css'}))
-       //  .on('error', function(err) { gulpUtil.log(gulpUtil.colors.red(err.message)); })
-       .pipe(gulp.dest('dist'));
-     }
-
-     function movefilother() {
-      return gulp.src('app/*.{php,access}')
-      .pipe(gulp.dest('dist'));
-    }
-
-    function movejs() {
-      return gulp.src('app/js/scripts.min.js')
-    .pipe(uglify()) // Mifify js (opt.)
-    .pipe(gulp.dest('dist/js'))
-    .pipe(filesize()).on('error', gulpUtil.log);
-  }
-  function movecss() {
-    return gulp.src('app/css/*')
-   .pipe(cleancss( {level: { 2: { specialComments: 0 } } })) // Opt., comment out when debugging
-   .pipe(gulp.dest('dist/css'))
-   .pipe(filesize()).on('error', gulpUtil.log);
- }
-
- function moveimages() {
-  return gulp.src('app/img/**/*.{jpg,svg,png,ico}')
-//         .pipe(imagemin([
-//     imageminJpg({
-//             loops: 5,
-//             min: 65,
-//             max: 70,
-//             quality: 'medium'
-//             }),
-//    imagemin.optipng({optimizationLevel: 5}),
-//     imagemin.svgo({
-//         plugins: [
-//             {removeViewBox: true},
-//             {cleanupIDs: false}
-//         ]
-//     })
-// ]))
-.pipe(gulp.dest('dist/img'))
-.pipe(filesize()).on('error', gulpUtil.log);
+  .pipe(strip())
+  .pipe(gulp.dest('dist'));
+}
+function movefilother() {
+	return gulp.src('app/*.{php,access}')
+	.pipe(gulp.dest('dist'));
+}
+function movejs() {
+	return gulp.src('app/js/scripts.min.js')
+  //  .pipe(uglify()) // Mifify js (opt.)
+  .pipe(gulp.dest('dist/js'))
+  .pipe(filesize()).on('error', gulpUtil.log);
+}
+function movecss() {
+	return gulp.src('app/css/*')
+ //  .pipe(cleancss( {level: { 2: { specialComments: 0 } } })) // Opt., comment out when debugging
+ .pipe(gulp.dest('dist/css'))
+ .pipe(filesize()).on('error', gulpUtil.log);
+}
+function moveimages() {
+	return gulp.src('app/img/**/*.{jpg,svg,png,ico}')
+	.pipe(gulp.dest('dist/img'))
+	.pipe(filesize()).on('error', gulpUtil.log);
 }
 
-function compressimg() {
- return gulp.src('app/beforecompress/**/*')
- .pipe(tingpng('8cVpmwZQXvCdnVDk2FqdbWVk5RfJBS9Z'))
- .pipe(gulp.dest('dist/aftercompress'));
-}
-
-gulp.task('compressimg', gulp.series(compressimg));
+// gulp.task('compressimg', gulp.series(compressimg));
 gulp.task('cleanbuild', cleaner);
 gulp.task('movefile', movefile);
 gulp.task('movefilother', movefilother);
 gulp.task('movejs', movejs);
 gulp.task('movecss', movecss);
 gulp.task('moveimages', gulp.series(moveimages));
-
-
 gulp.task('build', gulp.series('cleanbuild', gulp.parallel('movefile', 'movefilother', 'movejs', 'movecss', 'moveimages' )));
 
-// task для создания спрайтов png
+// FTP: ftp://vh146.timeweb.ru
+// Логин: cc63120
+// Пароль: j7X4Y36Od5Zm
+// http://cw25156.tmweb.ru/
 
-// ниже размещена команда для ручного создания спрайтов
-// в каталог app/libs/pngsprites/ закинут файлы для спрайта
+gulp.task( 'ftp', function () {
+	const conn = vinyFTP.create( {
+		host:     'vh210.timeweb.ru',
+		user:     'cw25156',
+		password: '2qzRb2Wo2zjm',
+		parallel: 10,
+		log:      gulpUtil.log
+	} );
 
-function spritepng() {
-	return gulp.src('app/libs/pngsprites/*.png')
+	const globs = [
+	'dist/**'
+	];
+    // using base = '.' will transfer everything to /public_html correctly
+    // turn off buffering in gulp.src for best performance
+    return gulp.src( globs, { base: './dist/', buffer: false } )
+        .pipe( conn.newerOrDifferentSize( '/public_html' ) )// only upload newer files
+        .pipe( conn.dest( '/public_html' ) );
+      } );
+
+// Generate Sprite icons
+gulp.task('pngsprite', function () {
+  // Generate our spritesheet
+  let spriteData = gulp.src('app/libs/pngsprites/*.png')
   .pipe(spritesmith({
-    imgName: 'sprite.png',
-    cssName: '_spritepng.css',
-    padding: 120,
-    algorithm:'top-down',
-    cssTemplate: 'app/libs/handlebars/sprites.handlebars'
-  }));
-    spriteData.img.pipe(gulp.dest('app/img/')); // путь, куда сохраняем картинку
-    spriteData.css.pipe(gulp.dest('app/css/')); // путь, куда сохраняем стили
-  }
+    imgName: 'pngsprite.png',
+    imgPath: '../img/sprite/pngsprite.png',
+    cssName: '_pngsprite.css',
+  //  retinaSrcFilter: 'app/img/sprite/*@2x.png',
+  //  retinaImgName: 'sprite@2x.png',
+  //  retinaImgPath: '../img/sprite@2x.png',
+  padding: 25
+}));
 
-  gulp.task('spritepng', spritepng);
+  // Pipe image stream onto disk
+  let imgStream = spriteData.img
+  .pipe(gulp.dest('app/img/sprite/'));
+
+  // Pipe CSS stream onto disk
+  let cssStream = spriteData.css
+  .pipe(gulp.dest('app/scss/'));
+
+  // Return a merged stream to handle both `end` events
+  return merge(imgStream, cssStream);
+});
+
+// создаем SVG спрайты
+gulp.task('svgsprite', function () {
+	return gulp.src('app/libs/svgsprites/*.svg')
+  // минифицируем svg
+  .pipe(svgmin({
+  	js2svg: {
+  		pretty: true
+  	}
+  }))
+  // удалить все атрибуты fill, style and stroke в фигурах
+  .pipe(cheerio({
+  	run: function ($) {
+  		$('[fill]').removeAttr('fill');
+  		$('[stroke]').removeAttr('stroke');
+  		$('[style]').removeAttr('style');
+  	},
+  	parserOptions: {
+  		xmlMode: true
+  	}
+  }))
+  // cheerio плагин заменит, если появилась, скобка '&gt;', на нормальную.
+  .pipe(replace('&gt;', '>'))
+  // build svg sprite
+  .pipe(spriteSvg({
+  	mode: {
+  		symbol: {
+  			render: {
+  				scss: {
+  					dest:'../../scss/_svgsprite.scss',
+  					template: 'app/libs/svgspritestemplate/_sprite-template.scss'
+  				}
+  			},
+  			sprite: "../sprite/sprite.svg",
+  			example: {
+          dest: '../sprite/spriteSvgDemo.html' // демо html
+        }
+      }
+    }
+  }))
+  .pipe(gulp.dest('app/img'));
+});
+
+
+function compressimg() {
+  return gulp.src('app/compressimg/**/*')
+  .pipe(tingpng('40Vtg4rNz0SLS5F1y6Ns4gBDQTNnlqWK'))
+  .pipe(gulp.dest('app/compressimg-end'));
+}
+
+gulp.task('compressimg', gulp.series(compressimg));
+
+
+// важные файлы размещены в каталоге templates/
+// нужно использовать SVG большого размера хорошего качества
+
+gulp.task('iconfont', function(){
+  return gulp.src(['app/libs/svgforiconfonts/*.svg'])
+  .pipe(iconfontCss({
+      fontName: 'myfont', // required
+      path: 'app/libs/templates/_icons.css',
+      targetPath: '../../scss/_icons.css',
+      fontPath: 'app/fonts/icons/'
+    }))
+  .pipe(iconfont({
+      fontName: 'myfont', // required
+      prependUnicode: true, // recommended option
+      formats: ['ttf', 'eot', 'woff'], // default, 'woff2' and 'svg' are available
+      timestamp: runTimestamp, // recommended to get consistent builds when watching files
+    }))
+  .on('glyphs', function(glyphs, options) {
+        // CSS templating, e.g.
+        console.log(glyphs, options);
+      })
+  .pipe(gulp.dest('app/fonts/icons/'));
+});
 
 // Generate the icons.
 gulp.task('genfav', function(done) {
@@ -345,90 +381,10 @@ gulp.task('injectfav', function() {
 
 // Check for updates on RealFaviconGenerator
 gulp.task('updatefav', function(done) {
-  var currentVersion = JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).version;
+  let currentVersion = JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).version;
   realFavicon.checkForUpdates(currentVersion, function(err) {
     if (err) {
       throw err;
     }
   });
 });
-
-// важные файлы размещены в каталоге templates/
-// нужно использовать SVG большого размера хорошего качества
-
-gulp.task('iconfont', function(){
-  return gulp.src(['app/libs/svgforiconfonts/*.svg'])
-  .pipe(iconfontCss({
-      fontName: 'myfont', // required
-      path: 'app/libs/templates/_icons.css',
-      targetPath: '../../scss/_icons.css',
-      fontPath: 'app/fonts/icons/'
-    }))
-  .pipe(iconfont({
-      fontName: 'myfont', // required
-      prependUnicode: true, // recommended option
-      formats: ['ttf', 'eot', 'woff'], // default, 'woff2' and 'svg' are available
-      timestamp: runTimestamp, // recommended to get consistent builds when watching files
-    }))
-  .on('glyphs', function(glyphs, options) {
-        // CSS templating, e.g.
-        console.log(glyphs, options);
-      })
-  .pipe(gulp.dest('app/fonts/icons/'));
-});
-
-
-
-  function spritesvg() {
-    return gulp.src('app/libs/plagins/svgsprites/*.svg')
-    .pipe(svgSprite({
-      selector: "i-sp-%f",
-      svg: {sprite: "svg.svg"},
-      svgPath: "%f",
-      cssFile: "_svg_sprite.css",
-      common: "ic"
-    }))
-    .pipe(gulp.dest("app/img/sprite/"));
-  }
-
-  gulp.task('spritesvg', spritesvg);
-
-
-
-
-// создаем SVG спрайты
-gulp.task('buildsvg', function () {
-  return gulp.src('app/libs/plagins/svgsprites/*.svg')
-  // минифицируем svg
-    .pipe(svgmin({
-    js2svg: {
-      pretty: true
-    }
-  }))
-  // удалить все атрибуты fill, style and stroke в фигурах
-    .pipe(cheerio({
-    run: function ($) {
-      $('[fill]').removeAttr('fill');
-      $('[stroke]').removeAttr('stroke');
-      $('[style]').removeAttr('style');
-    },
-    parserOptions: {
-      xmlMode: true
-    }
-  }))
-  // cheerio плагин заменит, если появилась, скобка '&gt;', на нормальную.
-    .pipe(replace('&gt;', '>'))
-  // build svg sprite
-    .pipe(spriteSvg({
-    mode: {
-      symbol: {
-        sprite: "../sprite/sprite.svg",
-        example: {
-          dest: '../sprite/spriteSvgDemo.html' // демо html
-        }
-      }
-    }
-  }))
-    .pipe(gulp.dest('app/img'));
-});
-
